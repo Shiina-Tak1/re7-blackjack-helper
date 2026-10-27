@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -47,16 +47,22 @@ body{
   padding:12px 12px calc(16px + env(safe-area-inset-bottom));
   user-select:none;-webkit-tap-highlight-color:transparent;
 }
-.wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));
-  gap:10px;align-items:start}
-.head,.actions{grid-column:1/-1}
+.wrap{display:grid;gap:10px}
+/* 两栏时按「点数|概率 / 牌面|对方手牌」两行对齐，行内矮面板下方的空隙只有个位数 */
+.cols{display:grid;gap:10px;align-items:start;grid-template-columns:1fr;
+  grid-template-areas:"score" "cards" "prob" "opp"}
+#pScore{grid-area:score} #pCards{grid-area:cards}
+#pProb{grid-area:prob}   #pOpp{grid-area:opp}
+@media (min-width:600px){
+  .cols{grid-template-columns:1fr 1fr;grid-template-areas:"score prob" "cards opp"}
+}
 h1{font-size:16px;font-weight:650;margin:0;letter-spacing:.3px}
 h1 em{font-style:normal;color:var(--exact)}
 .head{display:flex;align-items:center;gap:10px;padding:0 2px}
 .badge{margin-left:auto;font-size:11.5px;color:var(--dim);background:var(--surface);
   border:1px solid var(--line);padding:3px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
 .panel{background:linear-gradient(180deg,#1a1f27,#151920);border:1px solid var(--line);
-  border-radius:var(--r);padding:10px;
+  border-radius:var(--r);padding:10px;container-type:inline-size;
   box-shadow:inset 0 1px 0 rgb(255 255 255 / .03),0 8px 22px -16px #000}
 .sec-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
 .sec-title{font-size:12.5px;font-weight:650;color:var(--text);letter-spacing:.4px;flex:0 0 auto}
@@ -95,9 +101,9 @@ h1 em{font-style:normal;color:var(--exact)}
 
 /* ── 牌面：4 / 4 / 3 左对齐 ─────────────── */
 .cards{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start}
-.card{position:relative;flex:0 0 calc((100% - 18px)/4);height:50px;border-radius:11px;
+.card{position:relative;flex:0 0 calc((100% - 18px)/4);height:54px;border-radius:11px;
   border:1px dashed var(--line-2);background:rgb(255 255 255 / .025);color:var(--dim);
-  font:inherit;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;
+  font:inherit;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:background .16s,border-color .16s,color .16s,transform .08s}
 .card:active{transform:scale(.94)}
@@ -123,9 +129,23 @@ h1 em{font-style:normal;color:var(--exact)}
   background-size:220% 100%;background-repeat:no-repeat;animation:sweep 2.8s linear infinite}
 .legend{display:flex;gap:5px;margin-top:8px}
 .lg{flex:1;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);
-  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:5px 7px}
+  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:5px 7px;
+  white-space:nowrap}
 .lg s{width:7px;height:7px;border-radius:2px;flex:0 0 auto;background:var(--c)}
 .lg b{margin-left:auto;color:var(--text);font-weight:650;font-variant-numeric:tabular-nums}
+.lg .k{display:flex;align-items:center;gap:5px}
+/* 面板偏窄时把图例压紧一档，保证三项仍在一行 */
+@container (max-width:300px){
+  .legend{gap:4px}
+  .lg{gap:4px;padding:4px 5px;font-size:10.5px}
+  .lg .k{gap:3px}
+  .lg s{width:5px;height:5px}
+}
+/* 极端窄才退化成「标签在上、数值在下」，不与数字换行 */
+@container (max-width:226px){
+  .lg{flex-direction:column;align-items:stretch;gap:2px}
+  .lg b{margin-left:0;text-align:right}
+}
 
 /* ── 对方爆牌概率：固定 10 格刻度 + 从左到右填充 ─ */
 .risk{display:flex;align-items:center;gap:9px;margin:0 0 9px;padding:0 0 9px;
@@ -176,12 +196,11 @@ h1 em{font-style:normal;color:var(--exact)}
 @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.11)}100%{transform:scale(1)}}
 @keyframes chipIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
 @keyframes sweep{from{background-position:170% 0}to{background-position:-70% 0}}
-.wrap>*{animation:rise .42s var(--ease) both}
-.wrap>*:nth-child(2){animation-delay:.04s}
-.wrap>*:nth-child(3){animation-delay:.09s}
-.wrap>*:nth-child(4){animation-delay:.14s}
-.wrap>*:nth-child(5){animation-delay:.19s}
-.wrap>*:nth-child(6){animation-delay:.23s}
+.head,.actions,.cols>*{animation:rise .42s var(--ease) both}
+.cols>*:nth-child(2){animation-delay:.04s}
+.cols>*:nth-child(3){animation-delay:.09s}
+.cols>*:nth-child(4){animation-delay:.14s}
+.actions{animation-delay:.18s}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
@@ -193,64 +212,67 @@ h1 em{font-style:normal;color:var(--exact)}
 
   <div class="head">
     <h1>RE7 <em>21</em>点记牌器</h1>
-    <div class="badge" id="remainBadge">剩余 11 张</div>
+    <div class="badge" id="remainBadge" role="status" aria-live="polite" title="按 1–11 每种牌值各一张计算">牌池剩余 11 张</div>
   </div>
 
-  <section class="panel score" id="pScore">
-    <div class="side me">
-      <div class="side-head"><i></i>我方</div>
-      <div class="side-total"><span id="myTotal">0</span><u>点</u></div>
-      <div class="side-cards" id="myCards">—</div>
-      <div id="myChip"></div>
-    </div>
-    <div class="side opp">
-      <div class="side-head"><i></i>对方 · 明牌</div>
-      <div class="side-total"><span id="enemyTotal">0</span><u>点</u></div>
-      <div class="side-cards" id="enemyCards">—</div>
-      <div id="enemyChip"></div>
-    </div>
-  </section>
+  <div class="cols">
 
-  <section class="panel" id="pCards">
-    <div class="sec-head"><span class="sec-title">牌面</span><span class="sec-note" id="cardHint">左键=我方 · 右键=对方 · 中键=取消</span></div>
-    <div class="modes" id="modes" role="group" aria-label="标记模式" hidden>
-      <button class="mode" data-mode="my" aria-pressed="true"><i></i>我方</button>
-      <button class="mode" data-mode="enemy" aria-pressed="false"><i></i>对方</button>
+    <section class="panel score" id="pScore">
+      <div class="side me">
+        <div class="side-head"><i></i>我方</div>
+        <div class="side-total"><span id="myTotal">0</span><u>点</u></div>
+        <div class="side-cards" id="myCards">—</div>
+        <div id="myChip" role="status" aria-live="polite"></div>
+      </div>
+      <div class="side opp">
+        <div class="side-head"><i></i>对方 · 明牌合计</div>
+        <div class="side-total"><span id="enemyTotal">0</span><u>点</u></div>
+        <div class="side-cards" id="enemyCards">—</div>
+        <div id="enemyChip" role="status" aria-live="polite"></div>
+      </div>
+    </section>
 
-    </div>
-    <div class="cards" id="cards"></div>
-  </section>
+    <section class="panel" id="pCards">
+      <div class="sec-head"><span class="sec-title">牌值</span><span class="sec-note" id="cardHint" title="左键点牌标为我方，右键标为对方；再点同一键取消，点另一侧则改标记">左键我方 · 右键对方 · 同键再点取消</span></div>
+      <div class="modes" id="modes" role="group" aria-label="牌值标记对象" hidden>
+        <button class="mode" data-mode="my" aria-pressed="true"><i></i>记为我方</button>
+        <button class="mode" data-mode="enemy" aria-pressed="false"><i></i>记为对方</button>
+      </div>
+      <div class="cards" id="cards" role="group" aria-label="牌值标记（1 到 11）"></div>
+    </section>
 
-  <section class="panel" id="pProb">
-    <div class="sec-head"><span class="sec-title">我方下一抽概率</span><span class="sec-note" id="probNote">剩余 11 张</span></div>
-    <div class="bar">
-      <div class="seg-safe" id="safeBar"></div>
-      <div class="seg-exact" id="exactBar"></div>
-      <div class="seg-bust" id="bustBar"></div>
-    </div>
-    <div class="legend">
-      <div class="lg" style="--c:var(--safe)"><s></s>不爆<b id="safeTxt">—</b></div>
-      <div class="lg" style="--c:var(--exact)"><s></s>21点<b id="exactTxt">—</b></div>
-      <div class="lg" style="--c:var(--bust)"><s></s>爆牌<b id="bustTxt">—</b></div>
-    </div>
-  </section>
+    <section class="panel" id="pProb">
+      <div class="sec-head"><span class="sec-title">我方下一抽概率</span><span class="sec-note" id="probNote">按剩余 11 张计算</span></div>
+      <div class="bar">
+        <div class="seg-safe" id="safeBar"></div>
+        <div class="seg-exact" id="exactBar"></div>
+        <div class="seg-bust" id="bustBar"></div>
+      </div>
+      <div class="legend">
+        <div class="lg" style="--c:var(--safe)" title="加点后未满 21 点（不含恰好 21）"><span class="k"><s></s>不爆</span><b id="safeTxt">—</b></div>
+        <div class="lg" style="--c:var(--exact)" title="加点后恰好 21 点"><span class="k"><s></s>21点</span><b id="exactTxt">—</b></div>
+        <div class="lg" style="--c:var(--bust)" title="加点后超过 21 点"><span class="k"><s></s>爆牌</span><b id="bustTxt">—</b></div>
+      </div>
+    </section>
 
-  <section class="panel" id="pOpp">
-    <div class="sec-head"><span class="sec-title">对方手牌可能大小</span><span class="sec-note" id="oppNote">明牌 0 点 + 暗牌</span></div>
-    <div class="risk" id="riskRow">
-      <span>对方爆牌概率</span>
-      <span class="gauge">
-        <i class="fill" id="oppFill"></i>
-        <span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-      </span>
-      <b id="oppRiskTxt">—</b>
-    </div>
-    <div id="guessWrap"></div>
-  </section>
+    <section class="panel" id="pOpp">
+      <div class="sec-head"><span class="sec-title">对方合计推测</span><span class="sec-note" id="oppNote">尚未标记对方明牌</span></div>
+      <div class="risk" id="riskRow">
+        <span title="按剩余未标记牌等概率估算：对方合计（明牌 + 暗牌）超过 21 点的概率">对方爆牌概率</span>
+        <span class="gauge">
+          <i class="fill" id="oppFill"></i>
+          <span class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </span>
+        <b id="oppRiskTxt">—</b>
+      </div>
+      <div id="guessWrap"></div>
+    </section>
+
+  </div>
 
   <div class="actions">
-    <button class="btn undo" id="undoBtn" disabled>撤销</button>
-    <button class="btn reset" id="resetBtn">新局重置</button>
+    <button class="btn undo" id="undoBtn" disabled title="撤销上一步（Ctrl+Z）">撤销</button>
+    <button class="btn reset" id="resetBtn" title="清空所有标记，开始新的一局（可撤销）">重开一局</button>
   </div>
 
 </div>
@@ -270,6 +292,19 @@ let lastChanged=null;
 
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const pct=(a,b)=>b? (a/b*100) : 0;
+const chipHtml=(txt,cls)=>'<span class="chip'+(cls?' '+cls:'')+'">'+txt+'</span>';
+function normalize(o){ const n={}; CARDS.forEach(v=>{ const s=o&&o[v]; n[v]=(s==='my'||s==='enemy')?s:null; }); return n; }
+/* 整数百分比用最大余数法分配，保证三项加起来正好 100 */
+function pctInts(counts){
+  const total=counts.reduce((a,b)=>a+b,0);
+  if(!total) return counts.map(()=>0);
+  const raw=counts.map(c=>c/total*100);
+  const out=raw.map(v=>Math.floor(v));
+  let rest=100-out.reduce((a,b)=>a+b,0);
+  const order=raw.map((v,i)=>({i,frac:v-Math.floor(v)})).sort((a,b)=>b.frac-a.frac||a.i-b.i);
+  for(let k=0;k<rest;k++) out[order[k%order.length].i]++;
+  return out;
+}
 const $=id=>document.getElementById(id);
 const getMy=()=>CARDS.filter(v=>state[v]==='my');
 const getEnemy=()=>CARDS.filter(v=>state[v]==='enemy');
@@ -300,24 +335,33 @@ function tween(el,val,dec,suffix){
 }
 function dash(el){ if(el._raf){cancelAnimationFrame(el._raf);el._raf=null;} if(el._to)clearTimeout(el._to); el.textContent='—'; }
 
-/* ── 牌面 ─────────────────────────────── */
+/* ── 牌值标记 ─────────────────────────── */
 function renderCards(){
   const area=$('cards');
+  const active=document.activeElement;
+  const focusV=active&&active.classList&&active.classList.contains('card')?active.dataset.v:null;
   area.innerHTML='';
   CARDS.forEach(v=>{
+    const st=state[v];
     const b=document.createElement('button');
     b.type='button';
-    b.className='card'+(state[v]==='my'?' mine':state[v]==='enemy'?' enemy':'')
-                       +(lastChanged===v?' pop':'');
-    b.setAttribute('aria-pressed', state[v]!==null);
-    b.setAttribute('aria-label','牌 '+v+(state[v]==='my'?'（我方）':state[v]==='enemy'?'（对方）':'（剩余）'));
-    b.innerHTML='<span>'+v+'</span><span class="tag">'+(state[v]==='my'?'我':state[v]==='enemy'?'敌':'')+'</span>';
+    b.dataset.v=v;
+    b.className='card'+(st==='my'?' mine':st==='enemy'?' enemy':'')+(lastChanged===v?' pop':'');
+    b.setAttribute('aria-pressed',String(st!==null));
+    b.setAttribute('aria-label','牌值 '+v+'，'+(st==='my'?'已标记为我方':st==='enemy'?'已标记为对方':'未标记'));
+    b.innerHTML='<span>'+v+'</span><span class="tag">'+(st==='my'?'我':st==='enemy'?'对':'')+'</span>';
     b.addEventListener('click',()=>apply(v));
-    b.addEventListener('contextmenu',e=>{e.preventDefault();set(v,'enemy');});
-    b.addEventListener('mousedown',e=>{if(e.button===1)e.preventDefault();});
-    b.addEventListener('auxclick',e=>{if(e.button===1){e.preventDefault();set(v,null);}});
+    b.addEventListener('contextmenu',e=>{
+      e.preventDefault();
+      if(e.button!==2||isTouch) return;   /* 键盘 Shift+F10 / 菜单键、触摸长按不当作右键 */
+      set(v, state[v]==='enemy' ? null : 'enemy');
+    });
     area.appendChild(b);
   });
+  if(focusV!==null){
+    const el=area.querySelector('.card[data-v="'+focusV+'"]');
+    if(el) el.focus({preventScroll:true});
+  }
   lastChanged=null;
 }
 function apply(v){
@@ -332,14 +376,17 @@ function set(v,next){
   save(); update();
 }
 
-/* ── 对方手牌表：按牌值复用节点，只改内容与配色 ── */
+/* ── 对方暗牌表：按牌值复用节点，只改内容与配色 ── */
 const gcells=new Map();
-function syncGuesses(rows){
+function syncGuesses(rows, emptyText){
   const wrap=$('guessWrap');
+  const txt=emptyText||'所有牌都已标记';
   if(!rows){
     gcells.clear();
-    if(!wrap.firstElementChild||!wrap.firstElementChild.classList.contains('empty'))
-      wrap.innerHTML='<div class="empty">牌池已空。</div>';
+    if(wrap.firstElementChild && wrap.firstElementChild.classList.contains('empty')
+       && wrap.firstElementChild.textContent===txt) return;
+    wrap.innerHTML='<div class="empty"></div>';
+    wrap.firstElementChild.textContent=txt;
     return;
   }
   let grid=wrap.firstElementChild;
@@ -364,7 +411,7 @@ function syncGuesses(rows){
     el.classList.toggle('bust',bust);
     el.classList.toggle('exact',exact);
     el.classList.toggle('safe',!bust&&!exact);
-    el.querySelector('.gt').textContent='→ '+r.t;
+    el.querySelector('.gt').textContent='→ '+r.t+' 点';
     el.querySelector('.gb').style.display = bust?'':'none';
     if(grid.children[i]!==el) grid.insertBefore(el, grid.children[i]||null);
   });
@@ -376,52 +423,79 @@ function update(){
 
   const my=getMy(), enemy=getEnemy(), remain=getRemain();
   const myT=sum(my), enT=sum(enemy), n=remain.length;
+  const empty=CARDS.every(v=>state[v]===null);
 
   tween($('myTotal'),myT,0);
   tween($('enemyTotal'),enT,0);
   $('myCards').textContent=my.length?my.join(' + '):'—';
   $('enemyCards').textContent=enemy.length?enemy.join(' + '):'—';
-  $('remainBadge').textContent='剩余 '+n+' 张';
-  $('probNote').textContent='剩余 '+n+' 张';
+  $('remainBadge').textContent='牌池剩余 '+n+' 张';
 
-  /* 只在"一定爆牌"时提示 */
-  $('myChip').innerHTML    = myT>21 ? '<span class="chip">已爆牌</span>' : '';
-  $('enemyChip').innerHTML = enT>=21 ? '<span class="chip">已爆牌</span>' : '';
+  /* 角标：合计爆牌才提示（我方 >21；对方明牌 ≥21 时暗牌必然顶爆） */
+  $('myChip').innerHTML    = myT>21 ? chipHtml('已爆牌') : '';
+  $('enemyChip').innerHTML = enT>=21 ? chipHtml('已爆牌') : '';
 
-  /* 我方下一抽：不爆 / 21 点 / 爆 */
-  let safe=0,bust=0,exact=0;
-  remain.forEach(c=>{ const t=myT+c; t<=21?safe++:bust++; if(t===21)exact++; });
-  const sp=pct(safe,n), ep=pct(exact,n), bp=pct(bust,n);
-  $('safeBar').style.width=sp+'%';
-  $('exactBar').style.width=ep+'%';
-  $('bustBar').style.width=bp+'%';
-  n ? tween($('safeTxt'),sp,1,'%')  : dash($('safeTxt'));
-  n ? tween($('exactTxt'),ep,1,'%') : dash($('exactTxt'));
-  n ? tween($('bustTxt'),bp,1,'%')  : dash($('bustTxt'));
+  /* 我方下一抽：安全(<21) / 恰好 21 / 爆牌，三者互斥且合计 100% */
+  if(n){
+    let safe=0, exact=0, bust=0;
+    remain.forEach(c=>{
+      const t=myT+c;
+      if(t>21) bust++; else if(t===21) exact++; else safe++;
+    });
+    const sp=pct(safe,n), ep=pct(exact,n), bp=pct(bust,n);
+    $('safeBar').style.width=sp+'%';
+    $('exactBar').style.width=ep+'%';
+    $('bustBar').style.width=bp+'%';
+    const k=pctInts([safe,exact,bust]);
+    tween($('safeTxt'),k[0],0,'%');
+    tween($('exactTxt'),k[1],0,'%');
+    tween($('bustTxt'),k[2],0,'%');
+  } else {
+    $('safeBar').style.width='0%';
+    $('exactBar').style.width='0%';
+    $('bustBar').style.width='0%';
+    dash($('safeTxt')); dash($('exactTxt')); dash($('bustTxt'));
+  }
+  $('probNote').textContent = n ? '按剩余 '+n+' 张计算' : '牌池已空，无法计算';
 
-  /* 对方爆牌概率：固定 10 格刻度，填充从左往右长 */
+  /* 对方区：未标记 / 牌池空 / 正常三种状态 */
+  const oppState = !enemy.length ? 'unknown' : !n ? 'empty' : 'normal';
+
   let oBust=0;
-  remain.forEach(c=>{ if(enT+c>21) oBust++; });
+  if(oppState==='normal') remain.forEach(c=>{ if(enT+c>21) oBust++; });
   const op=pct(oBust,n);
-  $('oppFill').style.width=op+'%';
-  $('riskRow').classList.toggle('hot', n>0 && oBust*2>=n);
-  $('oppRiskTxt').textContent = enemy.length ? (n?op.toFixed(1)+'%':'—') : '—';
-  $('oppNote').textContent = enemy.length
-    ? '明牌 '+enT+' 点 + 暗牌 · 剩 '+n+' 张'
-    : '尚未标记对方明牌';
 
-  /* 对方手牌可能大小：每格 = 暗牌取该值时对方的总点数（等概率，故不列概率） */
-  syncGuesses(remain.length
-    ? remain.map(c=>({c,t:enT+c})).sort((a,b)=>a.t-b.t||a.c-b.c)
-    : null);
+  $('oppFill').style.width = oppState==='normal' ? op+'%' : '0%';
+  $('riskRow').classList.toggle('hot', oppState==='normal' && oBust*2>=n);
+
+  $('oppRiskTxt').textContent = oppState==='normal' ? Math.ceil(op)+'%' : '—';
+
+  $('oppNote').textContent = oppState==='unknown' ? '尚未标记对方明牌'
+    : oppState==='empty' ? '牌池已空 · 明牌 '+enT+' 点'
+    : '明牌 '+enT+' 点 · 剩余 '+n+' 张';
+
+  syncGuesses(
+    oppState==='normal'
+      ? remain.map(c=>({c,t:enT+c})).sort((a,b)=>a.t-b.t||a.c-b.c)
+      : null,
+    oppState==='unknown' ? (isTouch ? '先选「记为对方」，再点牌值' : '右键点牌，标记对方明牌')
+      : '所有牌都已标记'
+  );
 
   $('undoBtn').disabled = history.length===0;
+  $('resetBtn').disabled = empty;
 }
 
 /* ── 撤销 / 重置 / 记忆 ────────────────── */
 function undo(){
   if(!history.length) return;
-  state=JSON.parse(history.pop());
+  let snap;
+  try{ snap=JSON.parse(history.pop()); }
+  catch(e){ history.length=0; save(); update(); return; }
+  const prev=state;
+  state=normalize(snap);
+  const changed=CARDS.find(v=>prev[v]!==state[v]);
+  lastChanged = changed===undefined ? null : changed;
   save(); update();
 }
 function reset(){
@@ -430,18 +504,21 @@ function reset(){
   CARDS.forEach(v=>state[v]=null);
   save(); update();
 }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify({state,history:history.slice(-20)})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({state,history:history.slice(-MAXHIST)})); }catch(e){} }
 function load(){
   CARDS.forEach(v=>state[v]=null);
-  let restored=false;
   try{
-    const raw=localStorage.getItem(KEY); if(!raw) return false;
+    const raw=localStorage.getItem(KEY); if(!raw) return;
     const d=JSON.parse(raw);
-    CARDS.forEach(v=>{ const s=d.state&&d.state[v]; state[v]=(s==='my'||s==='enemy')?s:null; });
-    if(Array.isArray(d.history)) history=d.history.filter(h=>typeof h==='string').slice(-20);
-    restored=CARDS.some(v=>state[v]!==null);
+    state=normalize(d.state);
+    if(Array.isArray(d.history)){
+      history=d.history
+        .filter(h=>typeof h==='string')
+        .map(h=>{ try{ return JSON.stringify(normalize(JSON.parse(h))); }catch(e){ return null; } })
+        .filter(Boolean)
+        .slice(-MAXHIST);
+    }
   }catch(e){}
-  return restored;
 }
 
 /* ── 输入方式：触摸屏才显示模式切换 ────── */
@@ -450,8 +527,11 @@ function applyInputMode(){
   isTouch=mqTouch.matches;
   $('modes').hidden=!isTouch;
   $('cardHint').textContent = isTouch
-    ? '点牌 = 标记为当前模式 · 再点一次取消'
-    : '左键=我方 · 右键=对方 · 中键=取消';
+    ? '点牌值标为所选一方 · 再点同一张取消'
+    : '左键我方 · 右键对方 · 同键再点取消';
+  $('cardHint').title = isTouch
+    ? '先选「记为我方」或「记为对方」，再点牌值；再点同一张取消'
+    : '左键点牌标为我方，右键标为对方；再点同一键取消，点另一侧则改标记';
 }
 if(mqTouch.addEventListener) mqTouch.addEventListener('change',applyInputMode);
 else if(mqTouch.addListener) mqTouch.addListener(applyInputMode);
@@ -465,7 +545,8 @@ document.querySelectorAll('.mode').forEach(btn=>{
 $('undoBtn').addEventListener('click',undo);
 $('resetBtn').addEventListener('click',reset);
 window.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }
+  if(e.isComposing) return;
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&String(e.key).toLowerCase()==='z'){ e.preventDefault(); undo(); }
 });
 
 load();
